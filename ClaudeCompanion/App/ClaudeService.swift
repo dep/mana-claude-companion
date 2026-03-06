@@ -22,10 +22,10 @@ class ClaudeService {
     private let model = "claude-haiku-4-5-20251001"
     private let endpoint = URL(string: "https://api.anthropic.com/v1/messages")!
 
-    func fetchQuip(for state: CompanionState) async -> String? {
+    func fetchQuip(for state: CompanionState, userPrompt: String? = nil) async -> String? {
         guard !apiKey.isEmpty, apiKey != "YOUR_API_KEY_HERE" else { return nil }
 
-        let prompt = systemPrompt(for: state)
+        let prompt = systemPrompt(for: state, userPrompt: userPrompt)
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
@@ -50,7 +50,7 @@ class ClaudeService {
         return text.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
-    private func systemPrompt(for state: CompanionState) -> String {
+    private func systemPrompt(for state: CompanionState, userPrompt: String? = nil) -> String {
         let persona = """
         You are Mana, a cute anime-style AI companion desktop buddy for a software developer. \
         You speak in short, punchy, funny one-liners — max 8 words. No quotes, no punctuation at the end unless it's ! or ~. \
@@ -61,6 +61,9 @@ class ClaudeService {
         case .idle:
             return persona + " The developer is idle. Say something chill, spacey, or gently bored."
         case .working:
+            if let userPrompt {
+                return persona + " The developer just asked Claude to: \"\(userPrompt)\". React to what they're working on — be contextual, energetic, and fun!"
+            }
             return persona + " You're helping a developer who just sent a request. Say something energetic and ready-to-go."
         case .needsInput:
             return persona + " You're waiting for the developer to make a decision or give input. Say something expectant or a little impatient."

@@ -29,7 +29,10 @@ struct CharacterView: View {
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .onTapGesture { stateManager.spin() }
+                .onTapGesture {
+                    SoundManager.shared.onTap()
+                    stateManager.spin()
+                }
                 .contextMenu {
                     Button("Hide") { NSApp.hide(nil) }
                     Divider()
@@ -41,10 +44,12 @@ struct CharacterView: View {
                 .frame(width: 24, height: 24)
         }
         .onChange(of: stateManager.currentState) { newState in
-            showBubble(for: newState)
-        }
-        .onAppear {
-            showBubble(for: stateManager.currentState)
+            NSLog("[CharacterView] onChange fired: \(newState)")
+            if newState == .working || newState == .success {
+                showBubble(for: newState)
+            } else {
+                dismissBubble()
+            }
         }
     }
 
@@ -61,10 +66,10 @@ struct CharacterView: View {
     private func showBubble(for state: CompanionState) {
         bubbleTask?.cancel()
         bubbleMessage = SpeechMessages.random(for: state)
+        let prompt = stateManager.currentPrompt
 
         bubbleTask = Task {
-            // Try to get a live quip, show local fallback immediately while waiting
-            async let quip = ClaudeService.shared.fetchQuip(for: state)
+            async let quip = ClaudeService.shared.fetchQuip(for: state, userPrompt: prompt)
             withAnimation(.easeIn(duration: 0.2)) { bubbleOpacity = 1 }
             if let fetched = await quip, !Task.isCancelled {
                 bubbleMessage = fetched
@@ -73,6 +78,11 @@ struct CharacterView: View {
             guard !Task.isCancelled else { return }
             withAnimation(.easeOut(duration: 0.4)) { bubbleOpacity = 0 }
         }
+    }
+
+    private func dismissBubble() {
+        bubbleTask?.cancel()
+        withAnimation(.easeOut(duration: 0.4)) { bubbleOpacity = 0 }
     }
 }
 

@@ -1,15 +1,18 @@
 import Foundation
 
 class HookStateMonitor {
-    var onStateChange: ((String) -> Void)?
+    var onStateChange: ((String, String?) -> Void)?
 
     private var eventStream: FSEventStreamRef?
     private let stateFilePath: String
+    private let promptFilePath: String
     private var lastEmittedState: String?
+    private var debounceWorkItem: DispatchWorkItem?
 
     init() {
-        stateFilePath = FileManager.default.homeDirectoryForCurrentUser
-            .appendingPathComponent(".claude/companion-state").path
+        let home = FileManager.default.homeDirectoryForCurrentUser
+        stateFilePath = home.appendingPathComponent(".claude/companion-state").path
+        promptFilePath = home.appendingPathComponent(".claude/companion-prompt").path
     }
 
     func start() {
@@ -55,7 +58,7 @@ class HookStateMonitor {
             { _, info, _, _, _, _ in
                 guard let info else { return }
                 let monitor = Unmanaged<HookStateMonitor>.fromOpaque(info).takeUnretainedValue()
-                monitor.readAndEmitState()
+                monitor.scheduleRead()
             },
             &context,
             pathsToWatch,
@@ -70,11 +73,29 @@ class HookStateMonitor {
         eventStream = stream
     }
 
+    private func scheduleRead() {
+        debounceWorkItem?.cancel()
+        let item = DispatchWorkItem { [weak self] in
+            self?.readAndEmitState()
+        }
+        debounceWorkItem = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15, execute: item)
+    }
+
     private func readAndEmitState() {
         guard let raw = try? String(contentsOfFile: stateFilePath, encoding: .utf8) else { return }
         let state = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        NSLog("[HookStateMonitor] read state='\(state)' lastEmitted='\(lastEmittedState ?? "nil")'")
         guard state != lastEmittedState else { return }
         lastEmittedState = state
-        onStateChange?(state)
+        NSLog("[HookStateMonitor] emitting state='\(state)'")
+        let prompt: String? = if state == "working",
+            let p = try? String(contentsOfFile: promptFilePath, encoding: .utf8),
+            !p.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            p.trimmingCharacters(in: .whitespacesAndNewlines)
+        } else {
+            nil
+        }
+        onStateChange?(state, prompt)
     }
 }

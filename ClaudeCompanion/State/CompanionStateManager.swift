@@ -3,6 +3,7 @@ import Combine
 
 class CompanionStateManager: ObservableObject {
     @Published var currentState: CompanionState = .idle
+    var currentPrompt: String?
 
     private let hookMonitor = HookStateMonitor()
     private var doneTimer: Timer?
@@ -11,8 +12,8 @@ class CompanionStateManager: ObservableObject {
     private let doneRevertDelay: TimeInterval = 3.0
 
     func startMonitoring() {
-        hookMonitor.onStateChange = { [weak self] state in
-            self?.handleStateChange(state)
+        hookMonitor.onStateChange = { [weak self] state, prompt in
+            self?.handleStateChange(state, prompt: prompt)
         }
         hookMonitor.start()
     }
@@ -21,11 +22,12 @@ class CompanionStateManager: ObservableObject {
         hookMonitor.stop()
     }
 
-    private func handleStateChange(_ state: String) {
+    private func handleStateChange(_ state: String, prompt: String? = nil) {
         switch state {
         case "working":
             doneTimer?.invalidate()
             doneTimer = nil
+            currentPrompt = prompt
             transition(to: .working)
         case "needsInput":
             doneTimer?.invalidate()
@@ -60,6 +62,7 @@ class CompanionStateManager: ObservableObject {
         guard newState != currentState else { return }
         DispatchQueue.main.async {
             self.currentState = newState
+            SoundManager.shared.onStateChange(to: newState)
         }
     }
 }
