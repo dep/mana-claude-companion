@@ -1,8 +1,26 @@
 # claude-companion
 
-You'll need to set these hooks up in `~/.claude/settings.json`:
+A macOS menu bar companion that reacts to Claude Code activity via hooks.
 
+## Requirements
+
+- macOS 13.0+
+- Xcode
+- [xcodegen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
+
+## Build & Run
+
+```bash
+xcodegen generate
+xcodebuild -project ClaudeCompanion.xcodeproj -scheme ClaudeCompanion -configuration Debug build
+open ~/Library/Developer/Xcode/DerivedData/ClaudeCompanion-*/Build/Products/Debug/ClaudeCompanion.app
 ```
+
+## Claude Hooks Setup
+
+Add the following to `~/.claude/settings.json` to wire up the companion state:
+
+```json
 "hooks": {
   "Notification": [
     {
@@ -45,5 +63,5 @@ You'll need to set these hooks up in `~/.claude/settings.json`:
       ]
     }
   ]
-},
+}
 ```
