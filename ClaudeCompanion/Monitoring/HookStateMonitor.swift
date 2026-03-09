@@ -4,7 +4,7 @@ class HookStateMonitor {
     var onStateChange: ((String, String?) -> Void)?
 
     private var eventStream: FSEventStreamRef?
-    private let stateFilePath: String
+    let stateFilePath: String
     private let promptFilePath: String
     private var lastEmittedState: String?
     private var debounceWorkItem: DispatchWorkItem?
@@ -18,6 +18,10 @@ class HookStateMonitor {
     func start() {
         ensureStateFileExists()
         startStream()
+    }
+
+    func resetLastEmitted() {
+        lastEmittedState = nil
     }
 
     func stop() {

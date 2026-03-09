@@ -58,6 +58,26 @@ class CompanionStateManager: ObservableObject {
         transition(to: spinReturnState)
     }
 
+    func reset() {
+        doneTimer?.invalidate()
+        doneTimer = nil
+        spinReturnState = .idle
+        hookMonitor.resetLastEmitted()
+        // Force re-read from disk so we resync with the hook monitor
+        if let raw = try? String(contentsOfFile: hookMonitor.stateFilePath, encoding: .utf8) {
+            let state = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+            let mapped: CompanionState = switch state {
+            case "working":    .working
+            case "success":    .success
+            case "needsInput": .needsInput
+            default:           .idle
+            }
+            DispatchQueue.main.async { self.currentState = mapped }
+        } else {
+            DispatchQueue.main.async { self.currentState = .idle }
+        }
+    }
+
     private func transition(to newState: CompanionState) {
         guard newState != currentState else { return }
         DispatchQueue.main.async {

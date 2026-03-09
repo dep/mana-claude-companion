@@ -31,7 +31,11 @@ struct CharacterView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .onTapGesture {
                     SoundManager.shared.onTap()
-                    stateManager.spin()
+                    if stateManager.currentState == .spinning {
+                        stateManager.reset()
+                    } else {
+                        stateManager.spin()
+                    }
                 }
                 .contextMenu {
                     Button("Hide") { NSApp.hide(nil) }
