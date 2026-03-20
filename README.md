@@ -4,13 +4,13 @@ A macOS menu bar companion that reacts to Claude Code and opencode activity via 
 
 ![CleanShot 2026-03-07 at 06 16 34](https://github.com/user-attachments/assets/22e7d7d8-9c07-4602-95c2-a9e321041ec5)
 
-## Requirements
+## Download
 
-- macOS 13.0+
-- Xcode
-- [xcodegen](https://github.com/yonaskolb/XcodeGen): `brew install xcodegen`
+Grab the latest notarized build from [Releases](https://github.com/dep/claude-companion/releases) — no Xcode required.
 
 ## Build & Run
+
+**Requirements:** macOS 13.0+, Xcode, [xcodegen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`)
 
 ```bash
 xcodegen generate
