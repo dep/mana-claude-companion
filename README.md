@@ -1,6 +1,6 @@
 # claude-companion
 
-A macOS menu bar companion that reacts to Claude Code and opencode activity via hooks.
+A Claude Code companion built for MacOS that floats on top of your windows and reacts to Claude Code and opencode activity via hooks.
 
 ![CleanShot 2026-03-07 at 06 16 34](https://github.com/user-attachments/assets/22e7d7d8-9c07-4602-95c2-a9e321041ec5)
 
