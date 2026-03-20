@@ -6,7 +6,7 @@ A Claude Code companion built for MacOS that floats on top of your windows and r
 
 ## Download
 
-Grab the latest notarized build from [Releases](https://github.com/dep/mana/releases) — no Xcode required.
+Grab the latest notarized build from [Releases](https://github.com/dep/mana/releases), then set up your hooks as described below.
 
 ## Build & Run
 
